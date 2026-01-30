@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goodbye | Nature Legend</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bungee+Shade&family=Space+Mono:wght@400;700&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #0a0118; /* Deep midnight purple */
+            font-family: 'Space Mono', monospace;
+            color: white;
+        }
+
+        #canvas-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .final-overlay {
+            position: relative;
+            z-index: 10;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: radial-gradient(circle, transparent, rgba(0,0,0,0.4));
+        }
+
+        h1 {
+            font-family: 'Bungee Shade', cursive;
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            color: #00ffaa;
+            margin: 0;
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #00ffaa; }
+            to { text-shadow: 0 0 30px #00ffaa, 0 0 50px #00ffaa; }
+        }
+
+        .funny-msg {
+            max-width: 600px;
+            font-size: 1.2rem;
+            line-height: 1.6;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            margin: 30px;
+            border: 2px dashed #00ffaa;
+        }
+
+        .once-more-btn {
+            padding: 20px 40px;
+            font-family: 'Space Mono', monospace;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #0a0118;
+            background: #00ffaa;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: 0.3s;
+            text-decoration: none;
+            box-shadow: 0 10px 0 #008f5f;
+        }
+
+        .once-more-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 0 #008f5f;
+            background: #24ffbc;
+        }
+
+        .once-more-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 5px 0 #008f5f;
+        }
+
+        .signature {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.7rem;
+            opacity: 0.5;
+            letter-spacing: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="canvas-bg"></canvas>
+
+    <div class="final-overlay">
+        <h1>THAT'S ALL FOLKS!</h1>
+        
+        <div class="funny-msg">
+            <p id="typewriter">
+                Wait! You actually made it to the end? 🤯 <br><br>
+                The trees are impressed, the river is cheering, and I'm honestly surprised you didn't click "Give Up." <br><br>
+                Thanks for being a nature legend. Now go outside and touch some real grass (but come back soon!).
+            </p>
+        </div>
+
+        <a href="home.html" class="once-more-btn">ek baar or, once more</a>
+        
+        <div class="signature">PROJECT COMPLETE • NATURE IMMERSION 2026</div>
+    </div>
+
+    <script>
+        // --- 3D CELEBRATION ANIMATION ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('canvas-bg'), antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // Falling 3D Confetti
+        const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
+        const confettiCount = 200;
+        const pieces = [];
+
+        for(let i=0; i<confettiCount; i++) {
+            const material = new THREE.MeshPhongMaterial({ 
+                color: new THREE.Color(`hsl(${Math.random() * 360}, 70%, 60%)`),
+                flatShading: true
+            });
+            const piece = new THREE.Mesh(geometry, material);
+            
+            piece.position.set(
+                (Math.random() - 0.5) * 20,
+                Math.random() * 20,
+                (Math.random() - 0.5) * 10
+            );
+            piece.rotation.set(Math.random(), Math.random(), Math.random());
+            scene.add(piece);
+            pieces.push(piece);
+        }
+
+        // Add Lights
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(1, 1, 1);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0x404040, 2));
+
+        camera.position.z = 8;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            pieces.forEach(p => {
+                p.position.y -= 0.05;
+                p.rotation.x += 0.02;
+                p.rotation.y += 0.03;
+                
+                // Reset pieces to top
+                if(p.position.y < -10) {
+                    p.position.y = 10;
+                    p.position.x = (Math.random() - 0.5) * 20;
+                }
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dive Deep | Interactive Nature</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Quicksand:wght@300;500&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            background-color: #000805;
+            color: #ffffff;
+            font-family: 'Quicksand', sans-serif;
+            overflow-x: hidden;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            filter: blur(1px); /* Softens the glow */
+        }
+
+        .scroll-container {
+            position: relative;
+            z-index: 10;
+            padding: 50px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-family: 'Cinzel Decorative', cursive;
+            font-size: clamp(3rem, 10vw, 5rem);
+            color: #00ffaa;
+            text-shadow: 0 0 30px rgba(0, 255, 170, 0.6);
+            margin-top: 20vh;
+        }
+
+        .fact-card {
+            opacity: 0;
+            transform: translateX(-100px);
+            transition: all 1.2s cubic-bezier(0.17, 0.55, 0.55, 1);
+            background: rgba(0, 40, 20, 0.2);
+            backdrop-filter: blur(12px);
+            padding: 40px;
+            border-radius: 25px;
+            margin: 200px 0;
+            width: 85%;
+            max-width: 550px;
+            border: 1px solid rgba(0, 255, 170, 0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .fact-card.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .fact-card h3 { color: #00ffaa; margin-top: 0; font-family: 'Cinzel Decorative'; }
+
+        .bottom-nav {
+            margin-top: 100px;
+            display: flex;
+            gap: 40px;
+            padding-bottom: 100px;
+        }
+
+        .nav-btn {
+            padding: 18px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            transition: 0.5s;
+            font-size: 0.8rem;
+        }
+
+        .back-btn { border: 2px solid #ff4444; color: #ff4444; }
+        .back-btn:hover { background: #ff4444; color: white; box-shadow: 0 0 20px #ff4444; }
+
+        .next-btn { background: #00ffaa; color: #000805; border: 2px solid #00ffaa; }
+        .next-btn:hover { background: transparent; color: #00ffaa; box-shadow: 0 0 30px #00ffaa; }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="scroll-container">
+        <h1>NEURAL NATURE</h1>
+        <p style="letter-spacing: 5px; color: #00ffaa; opacity: 0.7;">SCROLL TO ACTIVATE THE NETWORK</p>
+
+        <div class="fact-card">
+            <h3>Secret 01: Fungal Intelligence</h3>
+            <p>The Earth’s soil is essentially a biological internet. Mushrooms are just the "routers" for a massive underground brain.</p>
+        </div>
+
+        <div class="fact-card">
+            <h3>Secret 02: Light Eaters</h3>
+            <p>Trees don't just eat CO2; they track the movement of the sun with microscopic precision, moving their leaves like solar panels.</p>
+        </div>
+
+        <div class="fact-card">
+            <h3>Secret 03: Sea Secrets</h3>
+            <p>The deepest parts of the ocean hold more gold than all the banks on land—hidden in the silence of the abyss.</p>
+        </div>
+
+        <div class="bottom-nav">
+            <a href="1p.html" class="nav-btn back-btn">or nhi jhel skta</a>
+            <a href="final.html" class="nav-btn next-btn">bhot bhadiyaaaaa</a>
+        </div>
+    </div>
+
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), antialias: true });
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // Interaction Variables
+        let mouseX = 0, mouseY = 0;
+        let targetX = 0, targetY = 0;
+
+        // Neural Network Geometry
+        const particlesGeometry = new THREE.BufferGeometry();
+        const counts = 200;
+        const positions = new Float32Array(counts * 3);
+        for(let i=0; i<counts*3; i++) { positions[i] = (Math.random() - 0.5) * 15; }
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+        const particlesMaterial = new THREE.PointsMaterial({ size: 0.05, color: 0x00ffaa });
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+
+        // Add "Energy Lines"
+        const lineMat = new THREE.LineBasicMaterial({ color: 0x00ffaa, transparent: true, opacity: 0.2 });
+        const linesMesh = new THREE.LineSegments(particlesGeometry, lineMat);
+        scene.add(linesMesh);
+
+        camera.position.z = 5;
+
+        // Tracking Mouse
+        document.addEventListener('mousemove', (e) => {
+            mouseX = (e.clientX - window.innerWidth/2) / 100;
+            mouseY = (e.clientY - window.innerHeight/2) / 100;
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Smoothed Mouse Interaction
+            targetX += (mouseX - targetX) * 0.05;
+            targetY += (mouseY - targetY) * 0.05;
+
+            particlesMesh.rotation.y += 0.002;
+            particlesMesh.rotation.x = targetY * 0.2;
+            particlesMesh.rotation.y = targetX * 0.2;
+            
+            linesMesh.rotation.x = targetY * 0.2;
+            linesMesh.rotation.y = targetX * 0.2;
+
+            // Pulsing effect
+            const time = Date.now() * 0.001;
+            particlesMaterial.size = 0.05 + Math.sin(time) * 0.02;
+
+            renderer.render(scene, camera);
+        }
+
+        // Scroll Reveal Logic
+        window.addEventListener('scroll', () => {
+            const cards = document.querySelectorAll('.fact-card');
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                if(rect.top < window.innerHeight * 0.75) card.classList.add('visible');
+            });
+            // Zoom camera on scroll
+            camera.position.z = 5 - (window.scrollY * 0.001);
+        });
+
+        animate();
+    </script>
+</body>
+</html>

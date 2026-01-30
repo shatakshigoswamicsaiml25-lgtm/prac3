@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nature Jumble | Play</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Almendra+Display&family=Montserrat:wght@300;700&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #051a0d;
+            font-family: 'Montserrat', sans-serif;
+            color: #e0f2f1;
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .game-container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        .glass-box {
+            background: rgba(255, 255, 255, 0.07);
+            backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            width: 90%;
+            max-width: 500px;
+        }
+
+        h1 {
+            font-family: 'Almendra Display', serif;
+            font-size: 3.5rem;
+            color: #81c784;
+            margin: 0 0 10px 0;
+            text-shadow: 0 0 15px rgba(129, 199, 132, 0.5);
+        }
+
+        .score-board {
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            color: #ffd700;
+            margin-bottom: 20px;
+        }
+
+        .jumbled-word {
+            font-size: 2.5rem;
+            letter-spacing: 10px;
+            font-weight: 700;
+            color: #fff;
+            margin: 20px 0;
+            text-transform: uppercase;
+        }
+
+        input {
+            padding: 12px;
+            width: 80%;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+            font-size: 1.1rem;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            margin-bottom: 20px;
+        }
+
+        .nav-buttons {
+            margin-top: 40px;
+            display: flex;
+            gap: 50px; /* Space between buttons */
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            transition: all 0.4s;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        .btn-back {
+            background: transparent;
+            border: 2px solid #ff4d4d;
+            color: #ff4d4d;
+        }
+
+        .btn-back:hover {
+            background: #ff4d4d;
+            color: white;
+            box-shadow: 0 0 20px rgba(255, 77, 77, 0.4);
+        }
+
+        .btn-next {
+            background: #2ecc71;
+            border: 2px solid #2ecc71;
+            color: #051a0d;
+        }
+
+        .btn-next:hover {
+            background: transparent;
+            color: #2ecc71;
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="game-container">
+        <div class="glass-box">
+            <h1>Word Jungle</h1>
+            <div class="score-board">SCORE: <span id="score">0</span></div>
+            <div class="jumbled-word" id="jumble">LOADING...</div>
+            <input type="text" id="userInput" placeholder="Solve the mystery..." onkeyup="checkWord(this.value)">
+            <p id="msg" style="height: 20px; color: #81c784; font-weight: bold;"></p>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="1p.html" class="btn btn-back">Dar gaya me to</a>
+            <a href="next.html" class="btn btn-next">khel abhi to shuruuuu hua h</a>
+        </div>
+    </div>
+
+    <script>
+        // --- GAME LOGIC ---
+        const words = ["FOREST", "RIVER", "MOUNTAIN", "VALLEY", "FLOWER", "WILDLIFE", "CANOPY", "JUNGLE"];
+        let currentWord = "";
+        let score = 0;
+
+        function shuffle(word) {
+            return word.split('').sort(() => Math.random() - 0.5).join('');
+        }
+
+        function newChallenge() {
+            currentWord = words[Math.floor(Math.random() * words.length)];
+            document.getElementById('jumble').innerText = shuffle(currentWord);
+            document.getElementById('userInput').value = "";
+            document.getElementById('msg').innerText = "";
+        }
+
+        function checkWord(val) {
+            if (val.toUpperCase() === currentWord) {
+                score += 10;
+                document.getElementById('score').innerText = score;
+                document.getElementById('msg').innerText = "Correct! +10";
+                setTimeout(newChallenge, 1000);
+            }
+        }
+
+        // --- 3D BACKGROUND ---
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        // Floating Nature Particles
+        const geometry = new THREE.OctahedronGeometry(0.2, 0);
+        const material = new THREE.MeshPhongMaterial({ color: 0x2ecc71, flatShading: true });
+        
+        const particles = [];
+        for(let i=0; i<100; i++) {
+            const p = new THREE.Mesh(geometry, material);
+            p.position.set((Math.random()-0.5)*20, (Math.random()-0.5)*20, (Math.random()-0.5)*20);
+            p.rotation.set(Math.random(), Math.random(), Math.random());
+            scene.add(p);
+            particles.push(p);
+        }
+
+        const light = new THREE.PointLight(0xffffff, 1, 100);
+        light.position.set(5, 5, 5);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0x404040));
+
+        camera.position.z = 8;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            particles.forEach(p => {
+                p.rotation.x += 0.01;
+                p.position.y -= 0.01;
+                if(p.position.y < -10) p.position.y = 10;
+            });
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
+
+        newChallenge();
+        animate();
+    </script>
+</body>
+</html>

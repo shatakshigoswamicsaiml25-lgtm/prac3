@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nature Immersive | Home</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Montserrat:wght@200;400&display=swap');
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #050f0a;
+        }
+
+        /* 3D Canvas */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* UI Overlay */
+        .overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            text-align: center;
+            width: 90%;
+            max-width: 800px;
+            pointer-events: none;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 3rem;
+            border-radius: 30px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+            pointer-events: all;
+        }
+
+        h1 {
+            font-family: 'Cinzel', serif;
+            font-size: clamp(2.5rem, 6vw, 5rem);
+            color: #e0f2f1;
+            margin: 0;
+            letter-spacing: 8px;
+            text-shadow: 0 0 15px rgba(255,255,255,0.2);
+        }
+
+        .info-text {
+            font-family: 'Montserrat', sans-serif;
+            color: #81c784;
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin: 20px 0 40px 0;
+            font-weight: 200;
+        }
+
+        /* Interactive Button */
+        .explore-btn {
+            background: transparent;
+            color: #ffffff;
+            border: 1px solid #ffffff;
+            padding: 15px 45px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.9rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.5s ease;
+            border-radius: 50px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .explore-btn:hover {
+            background: #ffffff;
+            color: #050f0a;
+            box-shadow: 0 0 30px rgba(255,255,255,0.4);
+            transform: translateY(-5px);
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .glass-card { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+
+    <div class="overlay">
+        <div class="glass-card">
+            <h1>PRIMORDIAL</h1>
+            <p class="info-text">
+                The forest is a living, breathing cathedral. Every leaf is a whisper, 
+                and every root is a heartbeat connecting the ancient past to our present. 
+                Step into the silence and find yourself.
+            </p>
+            <button class="explore-btn" onclick="location.href='1p.html'">Explore More</button>
+        </div>
+    </div>
+
+    <script>
+        let scene, camera, renderer, trees = [];
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x050f0a);
+            scene.fog = new THREE.FogExp2(0x050f0a, 0.15);
+
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // Create Stylized 3D Trees
+            for(let i=0; i<100; i++) {
+                createTree(
+                    (Math.random() - 0.5) * 40, 
+                    -2, 
+                    (Math.random() - 0.5) * 40
+                );
+            }
+
+            // Lighting
+            const light = new THREE.DirectionalLight(0x4ade80, 0.8);
+            light.position.set(0, 1, 1);
+            scene.add(light);
+            scene.add(new THREE.AmbientLight(0x404040));
+
+            camera.position.z = 5;
+            animate();
+        }
+
+        function createTree(x, y, z) {
+            const group = new THREE.Group();
+            
+            // Trunk
+            const trunkGeo = new THREE.CylinderGeometry(0.1, 0.15, 1, 8);
+            const trunkMat = new THREE.MeshLambertMaterial({ color: 0x2d1b0d });
+            const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+            group.add(trunk);
+
+            // Leaves (Cones for 3D depth)
+            const leafMat = new THREE.MeshLambertMaterial({ color: 0x1b4d2e });
+            for(let i=0; i<3; i++) {
+                const leafGeo = new THREE.ConeGeometry(0.6 - (i*0.1), 0.8, 8);
+                const leaf = new THREE.Mesh(leafGeo, leafMat);
+                leaf.position.y = 0.5 + (i * 0.4);
+                group.add(leaf);
+            }
+
+            group.position.set(x, y, z);
+            scene.add(group);
+            trees.push(group);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            
+            // Move through the forest
+            trees.forEach(tree => {
+                tree.position.z += 0.05;
+                if(tree.position.z > 10) tree.position.z = -30;
+                
+                // Swaying animation
+                tree.rotation.x = Math.sin(Date.now() * 0.001 + tree.position.x) * 0.02;
+            });
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        init();
+    </script>
+</body>
+</html>
